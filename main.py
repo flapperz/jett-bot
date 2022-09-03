@@ -1,4 +1,5 @@
 from dis import dis
+from msilib.schema import Component
 import os
 from re import S
 
@@ -8,6 +9,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+
+MA_GUILD_ID = '1013056940726833243'
 
 intents = discord.Intents.default()
 intents.members = True
@@ -27,6 +30,26 @@ async def ping_command(ctx):
 @bot.command(name='echo')
 async def echo_command(ctx, arg):
     await ctx.send(f"{arg}")
+
+
+
+class InviteButtons(discord.ui.View):
+    def __init__(self, *, invite_author, timeout=180, ):
+        super().__init__(timeout=timeout)
+        self.invite_author = invite_author
+        self.joiner_ids = set()
+
+    @discord.ui.button(label="มา",style=discord.ButtonStyle.green)
+    async def ma_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        joiner_id = interaction.user.id
+        self.joiner_ids.add(joiner_id)
+        await interaction.response.edit_message(content=f"<@{self.invite_author}> ชวนยิง\n response: {' '.join([f'<@{id}>' for id in self.joiner_ids])}")
+
+@bot.command(name="ma")
+async def invite_command(ctx: commands.context):
+    authorid = ctx.message.author.id
+    inviteButtons = InviteButtons(invite_author=authorid)
+    await ctx.send(f"<@{authorid}> ชวนยิง", view=inviteButtons)
 
 bot.run(DISCORD_TOKEN)
 
